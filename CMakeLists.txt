@@ -87,8 +87,6 @@ target_include_directories(${target}
 # Libraries
 # 
 
-message(STATUS "darknet library: " ${darknet_LIBRARIES} )
-
 target_link_libraries(${target}
     PRIVATE
     ${DEFAULT_LIBRARIES}

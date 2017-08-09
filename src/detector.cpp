@@ -10,7 +10,6 @@ void Detector::init() {
   std::copy(cfg.begin(), cfg.end(), cfgfile);
   char weightfile[weights.size() + 1];
   std::copy(weights.begin(), weights.end(), weightfile);
-
   net = parse_network_cfg(cfgfile);
 
   load_weights(&net, weightfile);
@@ -37,17 +36,19 @@ std::vector<std::vector<float>> Detector::detect(cv::Mat img) {
   float *X = sized.data;
   network_predict(net, X);
   get_region_boxes(l, im.w, im.h, net.w, net.h, threshold, probs, boxes, masks,
-                   0, 0, threshold, 1);
+                   0, 0, 0.5, 1);
   int num = l.w * l.h * l.n;
   for (int i = 0; i < num; ++i) {
     int _class = max_index(probs[i], l.classes);
     float prob = probs[i][_class];
     if (prob > threshold) {
       box b = boxes[i];
-      int x = b.x;
-      int y = b.y;
-      int w = b.w;
-      int h = b.h;
+      float w = b.w * im.w;
+      float h = b.h * im.h;
+      float x = b.x * im.w;
+      x -= w / 2.0f;
+      float y = b.y * im.h;
+      y -= h / 2.0f;
       std::vector<float> detection;
       detection.push_back(_class);
       detection.push_back(prob);
@@ -55,8 +56,13 @@ std::vector<std::vector<float>> Detector::detect(cv::Mat img) {
       detection.push_back(y);
       detection.push_back(w);
       detection.push_back(h);
+      detections.push_back(detection);
     }
   }
+  free_image(im);
+  free_image(sized);
+  free(boxes);
+  free_ptrs((void **)probs, l.w * l.h * l.n);
 
   return detections;
 }

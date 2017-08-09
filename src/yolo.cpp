@@ -66,8 +66,8 @@ std::vector<shared_ptr<Commands::Command>> YOLO::getCommands() {
     float score;
     int xmin;
     int ymin;
-    int xmax;
-    int ymax;
+    int width;
+    int height;
 
     for (int i = 0; i < detections.size(); ++i) {
       const std::vector<float> &d = detections[i];
@@ -75,16 +75,14 @@ std::vector<shared_ptr<Commands::Command>> YOLO::getCommands() {
       score = d[1];
       if (score >= confidence_threshold) {
         label = static_cast<int>(d[0]);
-        xmin = static_cast<int>(d[2] * frameImg.cols);
-        ymin = static_cast<int>(d[3] * frameImg.rows);
-        xmax = static_cast<int>(d[4] * frameImg.cols);
-        ymax = static_cast<int>(d[5] * frameImg.rows);
+        xmin = static_cast<int>(d[2]);
+        ymin = static_cast<int>(d[3]);
+        width = static_cast<int>(d[4]);
+        height = static_cast<int>(d[5]);
 
         std::shared_ptr<Class> labelClass = getClass(label);
-        if (labelClass) {
+        if (labelClass && width > 0 && height > 0) {
           unsigned long objectId = AnnotatorLib::Object::genId();
-          int width = xmax - xmin;
-          int height = ymax - ymin;
           shared_ptr<Commands::NewAnnotation> nA =
               std::make_shared<Commands::NewAnnotation>(
                   objectId, labelClass, project->getSession(), this->frame,

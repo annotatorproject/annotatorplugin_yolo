@@ -3,8 +3,11 @@
 
 #include <string>
 
-#include <darknet.h>
 #include <opencv2/core/mat.hpp>
+
+extern "C" {
+#include <darknet.h>
+}
 
 class Detector {
  public:
